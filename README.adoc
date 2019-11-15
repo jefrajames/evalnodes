@@ -82,7 +82,7 @@ Let's be more concrete now with some examples.
 Let's start with a very basic query returning a single value.
 
 We want to generate the following GraphQL query:
-[source, json]
+[source,]
 ----
 query {
   hello 
@@ -90,7 +90,7 @@ query {
 ----
 
 The expected response from the server is:
-[source, json]
+[source,]
 ----
 {
   "data": {
@@ -144,7 +144,7 @@ assertTrue(responseEntity.getResponse().getHello().equals("Hello from server"));
 Let's complexify a little the previous example: we want a hello field with an argument. The trick with GraphQL is that each field is a potential function with arguments.
 
 We want to generate the following GraphQL query:
-[source, json]
+[source,]
 ----
 query {
   helloWithName(name: "jefrajames")
@@ -152,7 +152,7 @@ query {
 ----
 
 The expected response from the server is:
-[source, json]
+[source,]
 ----
 {
   "data": {
@@ -201,10 +201,10 @@ assertTrue(responseEntity.getResponse().getHelloWithName().equals("Hello jefraja
 
 == Querying a list
 
-So far we've worked with single value in the response, let's work with a list: we want to retrieve the list of all super heroes.
+So far, we've worked with single value in the responses, let's work with a list: we want to retrieve the list of all super heroes.
 
 We want to generate the following GraphQL request:
-[source, json]
+[source,]
 ----
 query {
   allHeroes {
@@ -216,7 +216,7 @@ query {
 ----
 
 The expected response from the server is:
-[source, json]
+[source,]
 ----
 {
   "data": {
@@ -294,7 +294,7 @@ assertTrue(allHeroes.size()>=4);
 Let's say that we want the list of heroes from a specific team.
 
 We want to generate the following GraphQL request:
-[source, json]
+[source,]
 ----
 query {
   allHeroesInTeam(team: "Avengers")
@@ -309,7 +309,7 @@ query {
 We want to fetch all "Avengers" heroes including  their super powers.
 
 The expected response from the server is:
-[source, json]
+[source,]
 ----
 {
   "data": {
@@ -355,20 +355,7 @@ public class AllHeroesInTeamQuery {
 
 }
 ----
-We can observer that we have defined a team argument on the GraphQL query.
-
-HeroWithPowers is the DTO class that supports the selection set:
-[source,Java]
-----
-public class HeroWithPowers {
-    
-    String name;
-    String realName;
-    String primaryLocation;
-    List<String> superPowers;
-    
-    // getters and setters
-----
+We can observer that we have defined a team argument on the allHeroesInTeam field.
 
 
 The code to run the query is:
@@ -397,7 +384,7 @@ assertTrue(allAvengers.size()>=3);
 Let's say that we want to find all heroes with a specific power using a GraphQL variable. As a reminder, a GraphQL query can be parameterized with variables, maximizing query reuse, and avoiding costly string building in clients at runtime.
 
 We want to generate the following GraphQL request:
-[source, json]
+[source,]
 ----
 query ($power: String) {
   allHeroesWithPower(power: $power) {
@@ -409,8 +396,8 @@ query ($power: String) {
 }
 ----
 
-With the following variable:
-[source, json]
+With the following GraphQL variable:
+[source,]
 ---
 {"power": "Humor"}
 ---
@@ -419,7 +406,7 @@ In that case, we want all heroes having Humor. Because yes, humor is a real supe
 
 
 The expected response from the server is:
-[source, json]
+[source,]
 ----
 {
   "data": {
@@ -460,7 +447,7 @@ public class HeroesWithPowerVariableQuery {
 ----
 We have defined one variable named power and of type String on the GraphQL query.
 
-HeroesWithPowerDTO is a DTO class that supports the selection set:
+HeroesWithPowerDTO is the class that supports the selection set:
 [source,Java]
 ----
 public class HeroesWithPowerDTO {
@@ -493,13 +480,12 @@ assertNull(responseEntity.getErrors());
 assertNotNull(heroes);
 assertTrue(heroes.size()==1);
 ----
-
+      
 == Running a simple mutation
+So far, we've just read data using queries. Let’s try to modify data with a mutation operation now. According to the specification, a mutation is supposed to have some side effects. Typically, to add or modify data.
 
-So far, we,ve just read data using queries. Let's try to modify data with a mutation operation now. According to the specification, a mutation is supposed to have some side effects. Typically, to add or modify data.
-
-We want to generate the following GraphQL request:
-[source, json]
+We want to generate the following GraphQL operation:
+[source,]
 ----
 mutation {
   addHeroToTeam(hero: "Spider Man", team: "X-Men") {
@@ -512,11 +498,9 @@ mutation {
 }
 ----
 
-In that case, we want Spider Man to become a member of the X-Men team.
-
 
 The expected response from the server is:
-[source, json]
+[source,]
 ----
 {
   "data": {
@@ -537,6 +521,9 @@ The expected response from the server is:
   }
 }
 ----
+
+In that case, we want Spider Man to become a member of the X-Men team.
+
 
 The mutation class is:
 [source,Java]
@@ -595,221 +582,14 @@ assertTrue(addHeroToTeamDTO.getMembers().size() >= 1);
 ----
 We have provided the argument values. 
 
-By default, Nodes generates a query operation. Hence it is requyired to explictelly defined the request method.
-
-== Running a simple mutation
-
-So far, we,ve just read data using queries. Let's try to modify data with a mutation operation now.
-
-We want to generate the following GraphQL request:
-[source, json]
-----
-mutation {
-  addHeroToTeam(hero: "Spider Man", team: "X-Men") {
-    members {
-      name
-      primaryLocation
-      realName
-    }
-  }
-}
-----
-
-In that case, we want Spider Man to become a member of the X-Men team.
-
-
-The expected response from the server is:
-[source, json]
-----
-{
-  "data": {
-    "addHeroToTeam": {
-      "members": [
-        {
-          "name": "Wolverine",
-          "primaryLocation": "Unknown",
-          "realName": "James Howlett, aka Logan"
-        },
-        {
-          "name": "Spider Man",
-          "primaryLocation": "New York, NY",
-          "realName": "Peter Parker"
-        }
-      ]
-    }
-  }
-}
-----
-
-The mutation class is:
-[source,Java]
-----
-public class AddHeroToTeamMutation {
-
-    @GraphQLArguments({
-        @GraphQLArgument(name = "hero"),
-        @GraphQLArgument(name = "team")
-    }
-    )
-    AddHeroToTeamDTO addHeroToTeam;
-    // setters and getters
-----
-We have defined 2 arguments (hero and team) on the addHeroToTeam field.
-
-We need 2 DTO classes to support the hierarchy of the selection set since we want some details of all members of the team:
-
-[source,Java]
-----
-public class AddHeroToTeamDTO {
-    
-    List<AddHeroToTeamMemberDTO> members;
-    // setters and getters
-----
-[source,Java]
-----
-public class AddHeroToTeamMemberDTO {
-    
-    String name;
-    String realName;
-    String primaryLocation;
-    // setters and getters
-----
-
-The code to run the query is:
-[source, Java]
-----
-GraphQLRequestEntity requestEntity = GraphQLRequestEntity.Builder()
-    .url(SERVER_URL)
-    .arguments(new Arguments("addHeroToTeam", new   Argument<>("hero", "Spider Man"), new Argument<>("team", "X-Men")))
-    .request(AddHeroToTeamMutation.class)
-    .requestMethod(GraphQLTemplate.GraphQLMethod.MUTATE)
-    .build();
-
-        
-GraphQLTemplate graphQLTemplate = new GraphQLTemplate();
-
-GraphQLResponseEntity<AddHeroToTeamMutation> responseEntity = graphQLTemplate.mutate(requestEntity, AddHeroToTeamMutation.class);
-        
-AddHeroToTeamDTO addHeroToTeamDTO =responseEntity.getResponse().getAddHeroToTeam();
-        
-assertNull(responseEntity.getErrors());
-assertNotNull(addHeroToTeamDTO);
-addHeroToTeamDTO.getMembers().stream().forEach(System.out::println);
-assertTrue(addHeroToTeamDTO.getMembers().size() >= 1);
-----
-We have provided the argument values. No InputIObject are needed since these are single values. 
-
-By default, Nodes generates a query operation. Hence it is requyired to explictelly defined the request method.
-
-== Running a simple mutation
-
-So far, we've just read data using GraphQL queries. Let's try to modify data with a mutation operation now. According to the specification, a mutation is supposed to have some side effects, typically, to add or modify data.
-
-We want to generate the following GraphQL request:
-[source, json]
-----
-mutation {
-  addHeroToTeam(hero: "Spider Man", team: "X-Men") {
-    members {
-      name
-      primaryLocation
-      realName
-    }
-  }
-}
-----
-
-In that case, we want Spider Man to become a member of the X-Men team.
-
-
-The expected response from the server is:
-[source, json]
-----
-{
-  "data": {
-    "addHeroToTeam": {
-      "members": [
-        {
-          "name": "Wolverine",
-          "primaryLocation": "Unknown",
-          "realName": "James Howlett, aka Logan"
-        },
-        {
-          "name": "Spider Man",
-          "primaryLocation": "New York, NY",
-          "realName": "Peter Parker"
-        }
-      ]
-    }
-  }
-}
-----
-
-The mutation class is:
-[source,Java]
-----
-public class AddHeroToTeamMutation {
-
-    @GraphQLArguments({
-        @GraphQLArgument(name = "hero"),
-        @GraphQLArgument(name = "team")
-    }
-    )
-    AddHeroToTeamDTO addHeroToTeam;
-    // setters and getters
-----
-Two arguments are defined (hero and team) on the addHeroToTeam field.
-
-We need 2 DTO classes to support the hierarchy of the selection set since we want some details of all members of the team:
-
-[source,Java]
-----
-public class AddHeroToTeamDTO {
-    
-    List<AddHeroToTeamMemberDTO> members;
-    // setters and getters
-----
-[source,Java]
-----
-public class AddHeroToTeamMemberDTO {
-    
-    String name;
-    String realName;
-    String primaryLocation;
-    // setters and getters
-----
-
-The code to run the query is:
-[source, Java]
-----
-GraphQLRequestEntity requestEntity = GraphQLRequestEntity.Builder()
-    .url(SERVER_URL)
-    .arguments(new Arguments("addHeroToTeam", new   Argument<>("hero", "Spider Man"), new Argument<>("team", "X-Men")))
-    .request(AddHeroToTeamMutation.class)
-    .requestMethod(GraphQLTemplate.GraphQLMethod.MUTATE)
-    .build();
-
-        
-GraphQLTemplate graphQLTemplate = new GraphQLTemplate();
-
-GraphQLResponseEntity<AddHeroToTeamMutation> responseEntity = graphQLTemplate.mutate(requestEntity, AddHeroToTeamMutation.class);
-        
-AddHeroToTeamDTO addHeroToTeamDTO =responseEntity.getResponse().getAddHeroToTeam();
-        
-assertNull(responseEntity.getErrors());
-assertNotNull(addHeroToTeamDTO);
-assertTrue(addHeroToTeamDTO.getMembers().size() >= 1);
-----
-The 2 argument values are provided to the GraphQLRequestEntity object.
-
-By default, Nodes generates a query operation. Hence it is required to explictelly define MUTATE as the request method on the GraphQLRequestEntity object. The mutate method is used on the GraphQLTemplate.
+By default, Nodes generates a query operation (even if mutate is called). Hence it is required to explictelly define the MUTATE request method.
 
 == Running a more complex mutation
 
 Let's run a more complex mutation now. We want to add a new hero, namely Bruce Lee. We're going to use an InputObject for that.
 
 We want to generate the following GraphQL request:
-[source, json]
+[source,]
 ----
 mutation {
   createNewHero(hero: {name: "Bruce Lee", 
@@ -822,7 +602,7 @@ mutation {
 }
 ----
 The expected response from the server is:
-[source, json]
+[source,]
 ----
 {
   "data": {
@@ -895,10 +675,12 @@ public class CreateNewHeroTeamAffiliationArgument {
     
     String name;
     // setters and getters
+    
     @Override
     public String toString() {
         return "{" + "name:" + "\"" + name + "\"" + "}";
     }
+}
 ----
 The toString method is explicitelly coded to reflect the JSON structure of the teamAffiliations argument in the mutation request.
 
